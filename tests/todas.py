@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
-PRUEBAS = ["test_custodia.py", "test_proceso.py", "test_montaje.py"]
+PRUEBAS = ["test_custodia.py", "test_proceso.py", "test_montaje.py", "test_guardarrail_out.py"]
 
 
 def main() -> int:

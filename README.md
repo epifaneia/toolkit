@@ -56,7 +56,7 @@ One package per step. Every tool listed here is in the repository; the list grow
 
 `motores` builds one of them from the `MOTOR` variable, so switching engine is configuration, not code. `json_helpers` (first valid JSON out of a model response).
 
-**5 · Output guardrail** `kit.guardarrail_out` · `quote_verify` (the quote exists in the cited chunk, the page is derived from the offset, no evidence means degrade), `id_policy` (identifiers verbatim, derived, page-anchored or rejected, never invented), `roundtrip_diff` (the input file is sacred: three locks on the output XML).
+**5 · Output guardrail** `kit.guardarrail_out` · `quote_verify` (the quote exists in the cited chunk, literally or as a paraphrase that keeps every figure and negation; what comes back is always the document's text; the page is derived from the offset; no evidence means degrade), `id_policy` (identifiers verbatim, derived, page-anchored or rejected, never invented), `roundtrip_diff` (the input file is sacred: three locks on the output XML).
 
 **Assembly** `kit.montaje` · `cadena`. Three rules: a step is a function from artefact to artefact; an artefact is plain JSON; every step leaves a checkpoint (`NN_step.json`) that is reused only while its input and its declared `version` are unchanged. Debugging step 5 does not pay for step 4 again. The chain refuses to run without a named actor and stamps it on every checkpoint.
 
@@ -90,7 +90,7 @@ Step 5 earns its place even here. In my runs with `qwen2.5:7b` the model sometim
 ```bash
 pip install -r requirements.txt
 cp .env.example .env
-python tests/todas.py                  # every local test: custody, step 4 adapters, assembly, skeleton. No network, no keys
+python tests/todas.py                  # every local test: custody, step 4 adapters, assembly, skeleton, quote verification. No network, no keys
 ```
 
 One model call, any engine:
