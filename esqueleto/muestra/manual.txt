@@ -1,0 +1,13 @@
+Manual de uso de la cafetera ficticia K-10. Documento sintético para el esqueleto del toolkit.
+
+Instalación. Coloque la cafetera sobre una superficie plana y estable, a un mínimo de 10 cm de la pared. Conéctela a una toma con toma de tierra. No use alargadores.
+
+Llenado del depósito. Retire el depósito tirando hacia arriba. Llénelo con agua fría hasta la marca MAX, que equivale a 1,2 litros. No use agua con gas ni agua caliente.
+
+Filtro de agua. El filtro reduce la cal y alarga la vida de la caldera. Cámbielo cada 2 meses o cada 60 litros, lo que ocurra antes. La pantalla muestra el aviso F1 cuando toca cambiarlo.
+
+Descalcificación. Descalcifique la cafetera cada 3 meses con el descalcificador del fabricante. Si usa el filtro de agua, puede hacerlo cada 6 meses. El ciclo dura unos 25 minutos y no debe interrumpirse.
+
+Códigos de error. E1: depósito vacío, rellénelo. E2: bandeja de goteo llena, vacíela. E3: fallo de temperatura; apague la cafetera, espere 30 minutos y vuelva a encenderla. Si E3 persiste, contacte con el servicio técnico.
+
+Garantía. La garantía cubre 24 meses desde la fecha de compra. No cubre daños por cal si no se ha descalcificado según este manual.

@@ -1,3 +1,7 @@
 rapidfuzz>=3.0
 lxml>=5.0
 rank_bm25>=0.2
+# Opcionales, solo para el adaptador que los usa (kit/proceso):
+#   google-genai      deep_research
+#   faster-whisper    whisper
+#   kokoro soundfile  kokoro (más torch)

@@ -6,9 +6,9 @@ This pipeline is complete as a tool and deliberately incomplete as a deployment.
 
 | Wire | In the repo today | Company side | State |
 |---|---|---|---|
-| **1 · Identity** | `custodia/identity.py`. The pipeline refuses to run without a named actor. Default provider: environment variable `CUSTODIA_ACTOR`. Replaceable with one call. | Provide the actor from Entra ID, LDAP, Kerberos or the SSO header. Ten lines. | implemented / to integrate |
-| **2 · Events** | `custodia/ledger.py`. One JSON line per model call: actor, step, engine, endpoint, whether data left the machine, input size, input hash, result. Never the text. File `logs/custody.jsonl` or stdout. | Point the SIEM agent (Splunk, Sentinel, ELK) at the file. Nothing to write. | implemented / to integrate |
-| **3 · Sign-off** | `custodia/signoff.py` and `tools/signoff.py`. An output is a proposal until a manifest signs it: file hash, actor, timestamp, HMAC signature with a local key. `verify` fails if the file changed or the key differs. | Replace HMAC with the corporate PKI or the approval workflow (Polarion, e-signature) by registering two functions. The manifest and the hash check stay. | implemented (HMAC) / to integrate |
+| **1 · Identity** | `kit/custodia/identity.py`. The pipeline refuses to run without a named actor. Default provider: environment variable `CUSTODIA_ACTOR`. Replaceable with one call. | Provide the actor from Entra ID, LDAP, Kerberos or the SSO header. Ten lines. | implemented / to integrate |
+| **2 · Events** | `kit/custodia/ledger.py`. One JSON line per model call: actor, step, engine, endpoint, whether data left the machine, input size, input hash, result. Never the text. File `logs/custody.jsonl` or stdout. | Point the SIEM agent (Splunk, Sentinel, ELK) at the file. Nothing to write. | implemented / to integrate |
+| **3 · Sign-off** | `kit/custodia/signoff.py` and `kit/custodia/cli.py`. An output is a proposal until a manifest signs it: file hash, actor, timestamp, HMAC signature with a local key. `verify` fails if the file changed or the key differs. | Replace HMAC with the corporate PKI or the approval workflow (Polarion, e-signature) by registering two functions. The manifest and the hash check stay. | implemented (HMAC) / to integrate |
 
 Local tests, no network, no dependencies: `python tests/test_custodia.py`.
 
@@ -17,11 +17,11 @@ Local tests, no network, no dependencies: `python tests/test_custodia.py`.
 ## 1 · Identity
 
 ```python
-# default: export CUSTODIA_ACTOR=ana.garcia  → run.py prints "run: actor ana.garcia"
-# without it:                                → run.py exits 2: the pipeline does not run anonymously
+# default: export CUSTODIA_ACTOR=ana.garcia  → python -m esqueleto.run runs as ana.garcia
+# without it:                                → esqueleto.run exits 2: the pipeline does not run anonymously
 
 # company adapter, at startup (run.py or a wrapper):
-from custodia import identity
+from kit.custodia import identity
 identity.set_provider(lambda: get_entra_id_subject())      # any callable returning a non-empty string
 ```
 
@@ -49,7 +49,7 @@ Every model call goes through one function per client (`_post`), which records a
 | `input_chars` / `input_sha256_16` | size and truncated hash of the request; **never the text** |
 | `ok` / `error` / `seconds` | outcome and duration; errors are recorded and re-raised |
 
-Configuration: `CUSTODIA_LEDGER=logs/custody.jsonl` (default) or `CUSTODIA_LEDGER=-` for stdout. Summary for the custody sheet: `python tools/signoff.py ledger`.
+Configuration: `CUSTODIA_LEDGER=logs/custody.jsonl` (default) or `CUSTODIA_LEDGER=-` for stdout. Summary for the custody sheet: `python -m kit.custodia.cli ledger`.
 
 Company side: a file-tail input in Splunk, a DCR in Sentinel, Filebeat for ELK. The line is already JSON.
 
@@ -57,8 +57,8 @@ Company side: a file-tail input in Splunk, a DCR in Sentinel, Filebeat for ELK. 
 
 ```bash
 export CUSTODIA_ACTOR=ana.garcia CUSTODIA_SIGNING_KEY=<secret from the vault>
-python tools/signoff.py sign   data/outputs/reqif/X.reqif     # → X.reqif.signoff.json
-python tools/signoff.py verify data/outputs/reqif/X.reqif     # exit 0 only if signed and unchanged
+python -m kit.custodia.cli sign data/outputs/reqif/X.reqif     # → X.reqif.signoff.json
+python -m kit.custodia.cli verify data/outputs/reqif/X.reqif     # exit 0 only if signed and unchanged
 ```
 
 Rule: **nothing the model touched is imported or sent without a manifest that verifies.** The import step of the company's workflow calls `verify` (or `custodia.signoff.require_signoff`) first.
@@ -66,7 +66,7 @@ Rule: **nothing the model touched is imported or sent without a manifest that ve
 Company adapter: keep the manifest, replace the signature.
 
 ```python
-from custodia import signoff
+from kit.custodia import signoff
 signoff.set_scheme("corp-pki", sign_fn=lambda m: pki_sign(m["sha256"], m["actor"], m["ts"]),
                                verify_fn=lambda m: pki_verify(m))
 ```
