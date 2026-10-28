@@ -1,8 +1,8 @@
 """signoff CLI — firmar, verificar y resumir custodia. Tercer cable, a mano.
 
-    python tools/signoff.py sign   <fichero>        # crea <fichero>.signoff.json con el actor actual
-    python tools/signoff.py verify <fichero>...     # 0 si todos verifican; 1 si alguno no
-    python tools/signoff.py ledger [ruta]           # resumen del libro de custodia
+    python -m kit.custodia.cli sign   <fichero>      # crea <fichero>.signoff.json con el actor actual
+    python -m kit.custodia.cli verify <fichero>...     # 0 si todos verifican; 1 si alguno no
+    python -m kit.custodia.cli ledger [ruta]         # resumen del libro de custodia
 
 Necesita CUSTODIA_ACTOR (o un proveedor registrado) y CUSTODIA_SIGNING_KEY
 (o un esquema registrado). Un fichero sin manifiesto válido NO debe importarse
@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 def main(argv: list[str] | None = None) -> int:
-    from custodia import identity, ledger, signoff
+    from kit.custodia import identity, ledger, signoff
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv or argv[0] not in {"sign", "verify", "ledger"}:
         print(__doc__)
