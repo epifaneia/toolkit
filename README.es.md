@@ -56,7 +56,7 @@ Un paquete por paso. Toda herramienta listada aquí está en el repositorio; la 
 
 `motores` crea uno de ellos a partir de la variable `MOTOR`: cambiar de motor es configuración, no código. `json_helpers` (primer JSON válido de una respuesta de modelo).
 
-**5 · Guardarraíl de salida** `kit.guardarrail_out` · `quote_verify` (la quote existe en el chunk citado, la página se deriva del offset, sin evidencia se degrada), `id_policy` (identificadores verbatim, derivados, anclados a página o rechazados, nunca inventados), `roundtrip_diff` (el fichero de entrada es sagrado: tres candados sobre el XML de salida).
+**5 · Guardarraíl de salida** `kit.guardarrail_out` · `quote_verify` (la quote existe en el chunk citado, literal o como paráfrasis que conserva cada cifra y cada negación; lo que se devuelve es siempre el texto del documento; la página se deriva del offset; sin evidencia se degrada), `id_policy` (identificadores verbatim, derivados, anclados a página o rechazados, nunca inventados), `roundtrip_diff` (el fichero de entrada es sagrado: tres candados sobre el XML de salida).
 
 **Montaje** `kit.montaje` · `cadena`. Tres reglas: un paso es una función de artefacto a artefacto; un artefacto es JSON plano; cada paso deja un checkpoint (`NN_paso.json`) que solo se reutiliza mientras no cambien su entrada ni su `version` declarada. Depurar el paso 5 no vuelve a pagar el paso 4. La cadena no corre sin un actor con nombre y lo deja en cada checkpoint.
 
@@ -90,7 +90,7 @@ El paso 5 se gana el sitio incluso aquí. En mis ejecuciones con `qwen2.5:7b` el
 ```bash
 pip install -r requirements.txt
 cp .env.example .env
-python tests/todas.py                  # todas las pruebas locales: custodia, adaptadores del paso 4, montaje, esqueleto. Sin red, sin claves
+python tests/todas.py                  # todas las pruebas locales: custodia, adaptadores del paso 4, montaje, esqueleto, verificación de citas. Sin red, sin claves
 ```
 
 Una llamada al modelo, con cualquier motor:
