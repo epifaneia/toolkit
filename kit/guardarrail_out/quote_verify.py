@@ -38,9 +38,44 @@ from rapidfuzz import fuzz
 
 from kit.limpieza.text_norm import find_literal_span
 
-_CIFRA = re.compile(r"\d+")
 _NEGACION = re.compile(r"\b(?:no|not|never|nunca|ni|sin|without|cannot|neither|nor|none|nothing|nada|ningún|ninguna|ninguno|jamás)\b|n't\b",
                        re.IGNORECASE)
+
+# Una cifra con su signo (un «-» suelto, no el de un rango «9-16») y sus decimales, y la unidad
+# que la sigue si es una conocida. «3.6» y «3,6» son la misma cifra; «3.6» y «6.3» no.
+_UNIDADES = ("°C|ºC|°F|%|kΩ|MΩ|Ω|µA|mA|kA|A|µV|mV|kV|V|kWh|Wh|mW|kW|MW|W|Ncm|Nm|N|"
+             "GHz|MHz|kHz|Hz|µs|ns|ms|s|min|h|mm|cm|km|m|mg|kg|g|bar|kPa|MPa|Pa|dB|K")
+_CIFRA = re.compile(r"((?<![\w.,])[-−+])?(\d+(?:[.,]\d+)*)(?:\s?(" + _UNIDADES + r")(?!\w))?")
+
+# Pares de palabras que dicen lo contrario y se parecen mucho: una paráfrasis no puede cambiar
+# una por otra. Se cuentan por raíz; la lista es corta a propósito.
+_OPUESTOS = [
+    ("máximo/mínimo", r"\bm[aá]xim", r"\bm[ií]nim"), ("maximum/minimum", r"\bmaximum", r"\bminimum"),
+    ("conectar/desconectar", r"\bconect", r"\bdesconect"), ("connect/disconnect", r"\bconnect", r"\bdisconnect"),
+    ("activar/desactivar", r"\bactiv", r"\bdesactiv"), ("enable/disable", r"\benabl", r"\bdisabl"),
+    ("permitir/prohibir", r"\bpermit", r"\bprohib"), ("allow/forbid", r"\ballow", r"\bforbid"),
+    ("superior/inferior", r"\bsuperior", r"\binferior"), ("above/below", r"\babove", r"\bbelow"),
+    ("debe/puede", r"\bdebe", r"\bpuede"), ("shall/may", r"\bshall\b|\bmust\b", r"\bmay\b"),
+]
+
+
+def _cifras(texto: str) -> list[tuple[str, str]]:
+    """(número con su signo, unidad o "") por cada cifra, en el orden en que aparecen."""
+    out = []
+    for m in _CIFRA.finditer(texto):
+        signo = "-" if m.group(1) in ("-", "−") else ""
+        unidad = (m.group(3) or "").replace("ºC", "°C")
+        out.append((signo + m.group(2).replace(",", "."), unidad))
+    return out
+
+
+def _misma_cifra(a: tuple[str, str], b: tuple[str, str]) -> bool:
+    """Mismo número con el mismo signo; la unidad solo cuenta si las dos citas la dan."""
+    return a[0] == b[0] and (not a[1] or not b[1] or a[1] == b[1])
+
+
+def _ver(cifras: list[tuple[str, str]]) -> str:
+    return " ".join(n + (" " + u if u else "") for n, u in cifras) or "ninguna"
 
 
 def page_of(chunk: dict, offset: int) -> int:
@@ -68,16 +103,34 @@ def _a_palabras(texto: str, ini: int, fin: int) -> tuple[int, int]:
 
 
 def mismo_sentido(quote: str, tramo: str) -> str | None:
-    """None si la paráfrasis conserva cifras y negaciones; si no, el motivo.
+    """None si la paráfrasis conserva cifras, negaciones y sentido; si no, el motivo.
 
-    Las cifras se comparan como multiconjunto de números («3.6» y «3,6» dan lo mismo);
-    las negaciones, por recuento. Es una comprobación barata y determinista: no
-    entiende el texto, pero caza los dos cambios que más daño hacen en una cita.
+    Las cifras se comparan EN ORDEN, con su signo, sus decimales y su unidad cuando las
+    dos la dan: «-40 °C» no es «40 °C», «entre 9 y 16 V» no es «entre 16 y 9 V», «Nm» no es
+    «Ncm». Las negaciones, por recuento; los pares de opuestos (máximo/mínimo,
+    conectar/desconectar, permitido/prohibido…), también. Es una comprobación barata y
+    determinista: no entiende el texto, pero caza los cambios que más daño hacen en una cita.
     """
-    if sorted(_CIFRA.findall(quote)) != sorted(_CIFRA.findall(tramo)):
-        return f"cifras distintas: modelo {_CIFRA.findall(quote)} / documento {_CIFRA.findall(tramo)}"
+    cq, ct = _cifras(quote), _cifras(tramo)
+    if len(cq) != len(ct) or not all(_misma_cifra(a, b) for a, b in zip(cq, ct)):
+        return f"cifras distintas: modelo {_ver(cq)} / documento {_ver(ct)}"
     if len(_NEGACION.findall(quote)) != len(_NEGACION.findall(tramo)):
         return "negación distinta entre la cita del modelo y el documento"
+    for nombre, a, b in _OPUESTOS:
+        for patron in (a, b):
+            if len(re.findall(patron, quote, re.IGNORECASE)) != len(re.findall(patron, tramo, re.IGNORECASE)):
+                return f"sentido cambiado ({nombre}) entre la cita del modelo y el documento"
+    return None
+
+
+def negacion_omitida(texto: str, ini: int) -> str | None:
+    """Una cita literal que empieza justo después de una negación del documento la ha dejado
+    fuera: «debe liberarse…» sacado de «no debe liberarse…» es literal y dice lo contrario.
+    Se miran las tres palabras anteriores dentro de la misma frase o inciso."""
+    previo = re.split(r"[.;:!?,\n]", texto[max(0, ini - 80):ini])[-1]
+    for palabra in previo.split()[-3:]:
+        if _NEGACION.fullmatch(palabra.strip("«»\"'()").lower()):
+            return f"la cita deja fuera la negación «{palabra}» que la precede en el documento"
     return None
 
 
@@ -94,6 +147,9 @@ def verify_evidence(ev: dict, chunk_by_id: dict, min_ratio: float = 0.85,
     span = find_literal_span(quote, texto)
     if span:
         ini, fin, ratio, literal = *span, 1.0, True
+        omitida = negacion_omitida(texto, ini)
+        if omitida:
+            return None, f"{omitida} ({ev['chunk_id']})"
     else:
         aln = fuzz.partial_ratio_alignment(quote, texto)
         ratio = (aln.score if aln else 0.0) / 100.0

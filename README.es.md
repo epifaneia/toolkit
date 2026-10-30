@@ -56,7 +56,7 @@ Un paquete por paso. Toda herramienta listada aquí está en el repositorio; la 
 
 `motores` crea uno de ellos a partir de la variable `MOTOR`: cambiar de motor es configuración, no código. `json_helpers` (primer JSON válido de una respuesta de modelo).
 
-**5 · Guardarraíl de salida** `kit.guardarrail_out` · `quote_verify` (la quote existe en el chunk citado, literal o como paráfrasis que conserva cada cifra y cada negación; lo que se devuelve es siempre el texto del documento; la página se deriva del offset; sin evidencia se degrada), `id_policy` (identificadores verbatim, derivados, anclados a página o rechazados, nunca inventados), `roundtrip_diff` (el fichero de entrada es sagrado: tres candados sobre el XML de salida).
+**5 · Guardarraíl de salida** `kit.guardarrail_out` · `quote_verify` (la quote existe en el chunk citado, literal, empezando y acabando en límite de palabra y sin dejar fuera un «no» justo delante, o como paráfrasis que conserva cada cifra en orden, con su signo y su unidad, cada negación y una lista corta de opuestos como máximo/mínimo; lo que se devuelve es siempre el texto del documento; la página se deriva del offset; sin evidencia se degrada), `id_policy` (identificadores verbatim, derivados, anclados a página o rechazados, nunca inventados), `roundtrip_diff` (el fichero de entrada es sagrado: tres candados sobre el XML de salida).
 
 **Montaje** `kit.montaje` · `cadena`. Tres reglas: un paso es una función de artefacto a artefacto; un artefacto es JSON plano; cada paso deja un checkpoint (`NN_paso.json`) que solo se reutiliza mientras no cambien su entrada ni su `version` declarada. Depurar el paso 5 no vuelve a pagar el paso 4. La cadena no corre sin un actor con nombre y lo deja en cada checkpoint.
 
@@ -133,6 +133,7 @@ Los tres cables de `custodia` (identidad, eventos, firma) vienen con un valor lo
 - Solo el adaptador de Ollama se ha ejecutado contra su servicio desde este repositorio (el esqueleto con `qwen2.5:7b`). Los demás se prueban sin red contra imitaciones de su servicio, y sus llamadas siguen el código del que salen en mis otros proyectos.
 - `deep_research` devuelve texto, sin schema: la estructura la saca una segunda llamada con salida forzada. `jev` usa un endpoint alfa de OpenRouter; el precio del código se comprobó el 2026-10-28 y puede cambiar.
 - `whisper`, `kokoro` y `deep_research` necesitan paquetes que no están en `requirements.txt` (figuran ahí como opcionales); Whisper y Kokoro descargan sus pesos la primera vez.
+- `quote_verify` no entiende el texto. Compara cifras, negaciones y una lista corta de opuestos, así que una paráfrasis que mueve una negación a otra cláusula, o cambia dos palabras fuera de esa lista, sigue pasando como aproximada; `seal` marca para revisar antes de firmar un veredicto que solo tiene citas aproximadas.
 - `roundtrip_diff` está escrito para ReqIF. La idea (candados sobre lo que no puede cambiar) vale para cualquier XML; el código, todavía no.
 
 ---

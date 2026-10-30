@@ -58,6 +58,43 @@ check(ok is None and "inexistente" in why, "un chunk que no existe se descarta",
 ok, why = verificar("freno")
 check(ok is None and "corta" in why, "una cita demasiado corta se descarta", why)
 
+print("cortes y cifras (casos de la revisión del 30 oct)")
+T2 = ("5.1 Requisitos\nEl freno no debe liberarse mientras el motor esté apagado. Rango de -40 °C a 85 °C. "
+      "Consumo máximo de 1200 mA. Alimentación entre 9-16 V. El par de apriete es de 25 Nm. "
+      "Tiempo de arranque 3,6 s. No obstante, el sistema debe arrancar en frío.")
+CHUNKS["SPEC-C002"] = {"chunk_id": "SPEC-C002", "doc": "SPEC", "section": "§5.1", "text": T2,
+                       "page_start": 20, "page_map": [{"offset": 0, "page": 20}]}
+
+
+def v2(quote: str):
+    return verify_evidence({"chunk_id": "SPEC-C002", "quote": quote}, CHUNKS)
+
+
+ok, why = v2("debe liberarse mientras el motor esté apagado")
+check(ok is None and "deja fuera la negación" in why, "un trozo literal que deja fuera el «no» de delante no pasa", why)
+ok, why = v2("40 °C a 85 °C")
+check(ok is None and "cifras distintas" in why, "«40 °C» no está dentro de «-40 °C»: el signo es parte de la cifra", why)
+ok, why = v2("Consumo máximo de 200 mA")
+check(ok is None, "«200 mA» no está dentro de «1200 mA»", why)
+ok, why = v2("Consumo mínimo de 1200 mA.")
+check(ok is None and "máximo/mínimo" in why, "máximo cambiado por mínimo no pasa como paráfrasis", why)
+ok, why = v2("El par de apriete es de 25 Ncm.")
+check(ok is None and "cifras distintas" in why, "Nm cambiado por Ncm no pasa", why)
+ok, why = v2("Tiempo de arranque 6,3 s.")
+check(ok is None and "cifras distintas" in why, "3,6 s cambiado por 6,3 s no pasa", why)
+ok, why = v2("Alimentación entre 16-9 V.")
+check(ok is None and "cifras distintas" in why, "el orden de las cifras cuenta: 9-16 no es 16-9", why)
+ok, why = v2("Rango de 40 °C a 85 °C.")
+check(ok is None and "cifras distintas" in why, "en paráfrasis, -40 y 40 tampoco son la misma cifra", why)
+ok, why = v2("Alimentación entre 9-16 V.")
+check(ok is not None and ok["literal"], "un rango con guion sigue siendo literal: «9-16» no tiene signo", why)
+ok, why = v2("16 V. El par de apriete es de 25 Nm.")
+check(ok is not None and ok["literal"], "y citar desde el segundo número del rango también vale", why)
+ok, why = v2("el sistema debe arrancar en frío.")
+check(ok is not None and ok["literal"], "«No obstante,» delante no es una negación de la frase citada", why)
+ok, why = v2("Tiempo de arranque 3.6 s.")
+check(ok is not None, "3,6 y 3.6 son la misma cifra", why)
+
 print("seal")
 literal = {"chunk_id": "SPEC-C001", "quote": "El sistema debe liberar el freno de estacionamiento en menos de 200 ms"}
 negada = {"chunk_id": "SPEC-C001", "quote": "El sistema no debe liberar el freno de estacionamiento en menos de 200 ms"}

@@ -56,7 +56,7 @@ One package per step. Every tool listed here is in the repository; the list grow
 
 `motores` builds one of them from the `MOTOR` variable, so switching engine is configuration, not code. `json_helpers` (first valid JSON out of a model response).
 
-**5 · Output guardrail** `kit.guardarrail_out` · `quote_verify` (the quote exists in the cited chunk, literally or as a paraphrase that keeps every figure and negation; what comes back is always the document's text; the page is derived from the offset; no evidence means degrade), `id_policy` (identifiers verbatim, derived, page-anchored or rejected, never invented), `roundtrip_diff` (the input file is sacred: three locks on the output XML).
+**5 · Output guardrail** `kit.guardarrail_out` · `quote_verify` (the quote exists in the cited chunk, literally, starting and ending on a word boundary and not leaving out a "not" just before it, or as a paraphrase that keeps every figure in order, with its sign and unit, every negation and a short list of opposites such as maximum/minimum; what comes back is always the document's text; the page is derived from the offset; no evidence means degrade), `id_policy` (identifiers verbatim, derived, page-anchored or rejected, never invented), `roundtrip_diff` (the input file is sacred: three locks on the output XML).
 
 **Assembly** `kit.montaje` · `cadena`. Three rules: a step is a function from artefact to artefact; an artefact is plain JSON; every step leaves a checkpoint (`NN_step.json`) that is reused only while its input and its declared `version` are unchanged. Debugging step 5 does not pay for step 4 again. The chain refuses to run without a named actor and stamps it on every checkpoint.
 
@@ -133,6 +133,7 @@ The three `custodia` wires (identity, events, sign-off) ship with a local defaul
 - Only the Ollama adapter has been run live from this repository (the skeleton with `qwen2.5:7b`). The others are tested offline against fakes of their services, and their calls follow the code they were extracted from in my other projects.
 - `deep_research` returns text, no schema: structure comes from a second call with forced output. `jev` uses an alpha OpenRouter endpoint; its price in the code was checked on 2026-10-28 and may change.
 - `whisper`, `kokoro` and `deep_research` need packages that are not in `requirements.txt` (listed there as optional); Whisper and Kokoro download their weights on first use.
+- `quote_verify` does not understand the text. It compares figures, negations and a short list of opposites, so a paraphrase that moves a negation to another clause, or swaps two words outside that list, still passes as approximate; `seal` marks a verdict backed only by approximate quotes for review before signing.
 - `roundtrip_diff` is written for ReqIF. The idea (locks on what may not change) applies to any XML; the code does not, yet.
 
 ---
